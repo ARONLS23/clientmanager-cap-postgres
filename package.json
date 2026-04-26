@@ -1,0 +1,23 @@
+{
+  "name": "clientmanager",
+  "version": "1.0.0",
+  "dependencies": {
+    "@cap-js/postgres": "^2",
+    "@sap/cds": "^9"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2",
+    "@sap/cds-dk": "^9"
+  },
+  "scripts": {
+    "start": "cds-serve"
+  },
+  "cds": {
+    "requires": {
+      "auth": {
+        "kind": "dummy"
+      }
+    }
+  },
+  "private": true
+}
