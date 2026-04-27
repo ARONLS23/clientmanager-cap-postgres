@@ -25,6 +25,7 @@ modules:
           srv-url: ${default-url}
     requires:
       - name: clientmanager-postgres
+      - name: clientmanager-auth
 
   - name: clientmanager-postgres-deployer
     type: nodejs
@@ -39,9 +40,45 @@ modules:
     requires:
       - name: clientmanager-postgres
 
+  - name: clientmanager
+    type: approuter.nodejs
+    path: app/router
+    parameters:
+      keep-existing-routes: true
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api
+          url: ~{srv-url}
+          forwardAuthToken: true
+      - name: clientmanager-auth
+    provides:
+      - name: app-api
+        properties:
+          app-protocol: ${protocol}
+          app-uri: ${default-uri}
+
 resources:
   - name: clientmanager-postgres
     type: org.cloudfoundry.managed-service
     parameters:
       service: postgresql-db
       service-plan: trial
+
+  - name: clientmanager-auth
+    type: org.cloudfoundry.managed-service
+    requires:
+      - name: app-api
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: clientmanager-${space} #clientmanager-${org}-${space}
+        tenant-mode: dedicated
+        oauth2-configuration:
+          redirect-uris:
+            - https://*~{app-api/app-uri}/**

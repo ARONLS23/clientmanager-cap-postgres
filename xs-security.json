@@ -1,0 +1,47 @@
+{
+  "xsappname": "clientmanager",
+  "tenant-mode": "dedicated",
+  "description": "Security profile for Client Manager CAP application",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.ClientManagerAdmin",
+      "description": "Full access to Client Manager services"
+    },
+    {
+      "name": "$XSAPPNAME.ClientManagerViewer",
+      "description": "Read-only access to Client Manager services"
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "ClientManagerAdmin",
+      "description": "Administrator role for Client Manager",
+      "scope-references": [
+        "$XSAPPNAME.ClientManagerAdmin"
+      ]
+    },
+    {
+      "name": "ClientManagerViewer",
+      "description": "Viewer role for Client Manager",
+      "scope-references": [
+        "$XSAPPNAME.ClientManagerViewer"
+      ]
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "ClientManager_Admin",
+      "description": "Role collection for Client Manager administrators",
+      "role-template-references": [
+        "$XSAPPNAME.ClientManagerAdmin"
+      ]
+    },
+    {
+      "name": "ClientManager_Viewer",
+      "description": "Role collection for Client Manager read-only users",
+      "role-template-references": [
+        "$XSAPPNAME.ClientManagerViewer"
+      ]
+    }
+  ]
+}

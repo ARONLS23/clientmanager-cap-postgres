@@ -6,4 +6,6 @@ service ManagerClientService {
     entity ProjectMembers as projection on cli.ProjectMember;
     entity Tasks          as projection on cli.Task;
     entity Documents      as projection on cli.Document;
+
+    function getToken() returns String;
 }

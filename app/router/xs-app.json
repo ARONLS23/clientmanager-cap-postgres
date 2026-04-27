@@ -1,0 +1,18 @@
+{
+  "welcomeFile": "index.html",
+  "routes": [
+    {
+      "source": "^/index.html$",
+      "target": "/index.html",
+      "localDir": "resources",
+      "authenticationType": "none"
+    },
+    {
+      "source": "^/(.*)$",
+      "target": "$1",
+      "destination": "srv-api",
+      "csrfProtection": true,
+      "authenticationType": "xsuaa"
+    }
+  ]
+}
