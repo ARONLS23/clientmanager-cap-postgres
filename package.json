@@ -13,5 +13,12 @@
   "scripts": {
     "start": "cds-serve"
   },
+  "cds": {
+    "server": {
+      "body_parser": {
+        "limit": "3mb"
+      }
+    }
+  },
   "private": true
 }

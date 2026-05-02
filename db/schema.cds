@@ -54,6 +54,10 @@ entity Document : cuid, managed {
     url         : String(255);
     description : String(255);
 
+    mediaType   : String(100);
+    size        : Integer;
+    content     : LargeBinary;
+
     project     : Association to Project;
 }
 
