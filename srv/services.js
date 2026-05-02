@@ -6,6 +6,7 @@ class ManagerClientService extends cds.ApplicationService {
 
         this.on("uploadProjectDocument", this._uploadProjectDocument);
         this.on("getProjectDocumentContent", this._getProjectDocumentContent);
+        this.on('getAppInfo', this._getAppInfo);
 
         return super.init();
     }
@@ -178,6 +179,10 @@ class ManagerClientService extends cds.ApplicationService {
         }
 
         return fileName.split(".").pop().toUpperCase();
+    }
+
+    _getAppInfo() {
+        return "Client Manager CAP backend - CI/CD validation v1";
     }
 }
 

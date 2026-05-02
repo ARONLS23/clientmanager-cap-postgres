@@ -33,4 +33,6 @@ service ManagerClientService {
     function getProjectDocumentContent(documentId: UUID)                                                                                           returns DocumentContent;
 
     function getToken()                                                                                                                            returns String;
+
+    function getAppInfo()                                                                                                                          returns String;
 }
