@@ -35,4 +35,6 @@ service ManagerClientService {
     function getToken()                                                                                                                            returns String;
 
     function getAppInfo()                                                                                                                          returns String;
+
+    action   sendTestAlert(message: String)                                                                                                        returns String;
 }

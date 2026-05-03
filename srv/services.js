@@ -7,6 +7,7 @@ class ManagerClientService extends cds.ApplicationService {
         this.on("uploadProjectDocument", this._uploadProjectDocument);
         this.on("getProjectDocumentContent", this._getProjectDocumentContent);
         this.on('getAppInfo', this._getAppInfo);
+        this.on('sendTestAlert', this._sendTestAlert);
 
         return super.init();
     }
@@ -183,6 +184,113 @@ class ManagerClientService extends cds.ApplicationService {
 
     _getAppInfo() {
         return "Client Manager CAP backend - CI/CD validation v1";
+    }
+
+    async _sendTestAlert(req) {
+        const { message } = req.data;
+
+        const wasSent = await this._sendAlertNotificationEvent({
+            eventType: "ClientManagerCustomAlert",
+            category: "ALERT",
+            severity: "INFO",
+            subject: "Client Manager custom alert",
+            body: message || "Custom alert sent from CAP backend.",
+            resource: {
+                resourceName: "clientmanager-srv",
+                resourceType: "application"
+            },
+            tags: {
+                application: "clientmanager",
+                module: "backend",
+                source: "cap"
+            }
+        });
+
+        return wasSent ? "Alert sent" : "Alert was not sent";
+    }
+
+    async _sendAlertNotificationEvent(event) {
+        const credentials = this._getAlertNotificationCredentials();
+
+        if (!credentials) {
+            console.warn("Alert Notification service credentials were not found.");
+            return false;
+        }
+
+        const producerUrl = this._getAlertNotificationProducerUrl(credentials);
+        const accessToken = await this._getAlertNotificationAccessToken(credentials);
+
+        if (!producerUrl || !accessToken) {
+            console.warn("Alert Notification producer URL or access token is missing.");
+            return false;
+        }
+
+        const response = await fetch(producerUrl, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(event)
+        });
+
+        if (!response.ok) {
+            const responseText = await response.text();
+            console.error(
+                "Could not send Alert Notification event:",
+                response.status,
+                responseText
+            );
+            return false;
+        }
+
+        return true;
+    }
+
+    _getAlertNotificationCredentials() {
+        const vcapServices = JSON.parse(process.env.VCAP_SERVICES || "{}");
+        const alertNotificationServices = vcapServices["alert-notification"] || [];
+
+        const alertNotificationService = alertNotificationServices.find(
+            (serviceInstance) => serviceInstance.name === "clientmanager-alert-notification"
+        );
+
+        return alertNotificationService
+            ? alertNotificationService.credentials
+            : null;
+    }
+
+    _getAlertNotificationProducerUrl(credentials) {
+        if (!credentials.url) {
+            return null;
+        }
+
+        return `${credentials.url.replace(/\/$/, "")}/cf/producer/v1/resource-events`;
+    }
+
+    async _getAlertNotificationAccessToken(credentials) {
+        const tokenResponse = await fetch(credentials.oauth_url, {
+            method: "POST",
+            headers: {
+                Authorization: "Basic " + Buffer
+                    .from(`${credentials.client_id}:${credentials.client_secret}`)
+                    .toString("base64"),
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        });
+
+        if (!tokenResponse.ok) {
+            const responseText = await tokenResponse.text();
+            console.error(
+                "Could not fetch Alert Notification token:",
+                tokenResponse.status,
+                responseText
+            );
+            return null;
+        }
+
+        const tokenData = await tokenResponse.json();
+        return tokenData.access_token;
     }
 }
 

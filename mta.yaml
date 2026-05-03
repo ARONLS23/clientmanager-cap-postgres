@@ -26,6 +26,7 @@ modules:
     requires:
       - name: clientmanager-postgres
       - name: clientmanager-auth
+      - name: clientmanager-alert-notification
 
   - name: clientmanager-postgres-deployer
     type: nodejs
@@ -82,3 +83,8 @@ resources:
         oauth2-configuration:
           redirect-uris:
             - https://*~{app-api/app-uri}/**
+
+  - name: clientmanager-alert-notification
+    type: org.cloudfoundry.existing-service
+    parameters:
+      service-name: clientmanager-alert-notification
