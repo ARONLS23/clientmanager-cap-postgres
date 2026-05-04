@@ -61,3 +61,13 @@ entity Document : cuid, managed {
     project     : Association to Project;
 }
 
+entity User : cuid, managed {
+    fullName  : String(100);
+    email     : String(120);
+    userType  : String(30);
+    role      : String(50);
+    status    : String(30);
+    iasUserId : String(100);
+
+    client    : Association to Client;
+}

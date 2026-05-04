@@ -5,6 +5,7 @@ service ManagerClientService {
     entity Projects       as projection on cli.Project;
     entity ProjectMembers as projection on cli.ProjectMember;
     entity Tasks          as projection on cli.Task;
+    entity Users          as projection on cli.User;
 
     entity Documents      as
         projection on cli.Document {
@@ -40,4 +41,6 @@ service ManagerClientService {
 
     @(requires: 'JobScheduler')
     action   runScheduledHealthCheck()                                                                                                             returns String;
+
+    action   createUser(fullName: String, email: String, userType: String, role: String, clientId: UUID)                                           returns Users;
 }
