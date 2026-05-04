@@ -8,6 +8,7 @@ class ManagerClientService extends cds.ApplicationService {
         this.on("getProjectDocumentContent", this._getProjectDocumentContent);
         this.on('getAppInfo', this._getAppInfo);
         this.on('sendTestAlert', this._sendTestAlert);
+        this.on("runScheduledHealthCheck", this._runScheduledHealthCheck);
 
         return super.init();
     }
@@ -331,6 +332,27 @@ class ManagerClientService extends cds.ApplicationService {
                 mediaType: document.mediaType || ""
             }
         });
+    }
+
+    async _runScheduledHealthCheck() {
+        await this._sendAlertNotificationEvent({
+            eventType: "ClientManagerScheduledJob",
+            category: "ALERT",
+            severity: "INFO",
+            subject: "Client Manager scheduled job executed",
+            body: "The scheduled health check job was executed successfully.",
+            resource: {
+                resourceName: "clientmanager-srv",
+                resourceType: "application"
+            },
+            tags: {
+                application: "clientmanager",
+                module: "backend",
+                source: "job-scheduler"
+            }
+        });
+
+        return "Scheduled health check executed";
     }
 }
 

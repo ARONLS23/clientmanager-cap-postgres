@@ -27,6 +27,7 @@ modules:
       - name: clientmanager-postgres
       - name: clientmanager-auth
       - name: clientmanager-alert-notification
+      - name: clientmanager-job-scheduler
 
   - name: clientmanager-postgres-deployer
     type: nodejs
@@ -88,3 +89,8 @@ resources:
     type: org.cloudfoundry.existing-service
     parameters:
       service-name: clientmanager-alert-notification
+
+  - name: clientmanager-job-scheduler
+    type: org.cloudfoundry.existing-service
+    parameters:
+      service-name: clientmanager-job-scheduler

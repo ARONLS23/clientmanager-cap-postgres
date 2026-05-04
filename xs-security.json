@@ -10,6 +10,13 @@
     {
       "name": "$XSAPPNAME.ClientManagerViewer",
       "description": "Read-only access to Client Manager services"
+    },
+    {
+      "name": "$XSAPPNAME.JobScheduler",
+      "description": "Run scheduled jobs",
+      "grant-as-authority-to-apps": [
+        "$XSSERVICENAME(clientmanager-job-scheduler)"
+      ]
     }
   ],
   "role-templates": [
@@ -25,6 +32,13 @@
       "description": "Viewer role for Client Manager",
       "scope-references": [
         "$XSAPPNAME.ClientManagerViewer"
+      ]
+    },
+    {
+      "name": "JobScheduler",
+      "description": "Run scheduled jobs",
+      "scope-references": [
+        "$XSAPPNAME.JobScheduler"
       ]
     }
   ],

@@ -37,4 +37,7 @@ service ManagerClientService {
     function getAppInfo()                                                                                                                          returns String;
 
     action   sendTestAlert(message: String)                                                                                                        returns String;
+
+    @(requires: 'JobScheduler')
+    action   runScheduledHealthCheck()                                                                                                             returns String;
 }
