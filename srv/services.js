@@ -39,7 +39,7 @@ class ManagerClientService extends cds.ApplicationService {
 
         const project = await tx.run(
             SELECT.one.from(Project)
-                .columns("ID")
+                .columns("ID", "name")
                 .where({ ID: projectId })
         );
 
@@ -66,7 +66,7 @@ class ManagerClientService extends cds.ApplicationService {
             })
         );
 
-        return tx.run(
+        const savedDocument = await tx.run(
             SELECT.one.from(Documents)
                 .columns(
                     "ID",
@@ -84,6 +84,14 @@ class ManagerClientService extends cds.ApplicationService {
                 )
                 .where({ ID: documentId })
         );
+
+        try {
+            await this._sendProjectDocumentUploadedAlert(savedDocument, project);
+        } catch (error) {
+            console.error("Unexpected error sending document upload alert:", error);
+        }
+
+        return savedDocument;
     }
 
     async _getProjectDocumentContent(req) {
@@ -291,6 +299,38 @@ class ManagerClientService extends cds.ApplicationService {
 
         const tokenData = await tokenResponse.json();
         return tokenData.access_token;
+    }
+
+    async _sendProjectDocumentUploadedAlert(document, project) {
+        if (!document) {
+            return false;
+        }
+
+        const sizeInKb = document.size ? (document.size / 1024).toFixed(2) : "0.00";
+
+        return this._sendAlertNotificationEvent({
+            eventType: "ClientManagerCustomAlert",
+            category: "ALERT",
+            severity: "INFO",
+            subject: "Client Manager - Documento cargado",
+            body: `Se subió el documento "${document.name}" al proyecto "${project.name}". Tipo: ${document.type}. Tamaño: ${sizeInKb} KB.`,
+            resource: {
+                resourceName: "clientmanager-srv",
+                resourceType: "application"
+            },
+            tags: {
+                application: "clientmanager",
+                module: "backend",
+                source: "cap",
+                operation: "documentUpload",
+                entity: "Document",
+                outcome: "success",
+                documentId: String(document.ID),
+                projectId: String(document.project_ID),
+                fileType: document.type || "",
+                mediaType: document.mediaType || ""
+            }
+        });
     }
 }
 
