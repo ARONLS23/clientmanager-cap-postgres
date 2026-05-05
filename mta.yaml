@@ -28,6 +28,10 @@ modules:
       - name: clientmanager-auth
       - name: clientmanager-alert-notification
       - name: clientmanager-job-scheduler
+      - name: clientmanager-feature-flags
+        parameters:
+          config:
+            enableBasicAuth: true
 
   - name: clientmanager-postgres-deployer
     type: nodejs
@@ -94,3 +98,8 @@ resources:
     type: org.cloudfoundry.existing-service
     parameters:
       service-name: clientmanager-job-scheduler
+
+  - name: clientmanager-feature-flags
+    type: org.cloudfoundry.existing-service
+    parameters:
+      service-name: clientmanager-feature-flags
