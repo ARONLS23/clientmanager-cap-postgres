@@ -1,4 +1,5 @@
 const cds = require('@sap/cds');
+const { getDestination } = require("@sap-cloud-sdk/connectivity");
 
 class ManagerClientService extends cds.ApplicationService {
     init() {
@@ -434,9 +435,9 @@ class ManagerClientService extends cds.ApplicationService {
     }
 
     async _createUserInIas({ fullName, email, iasGroup }) {
-        const { baseUrl } = this._getIasScimCredentials();
+        const { baseUrl } = await this._getIasScimCredentials();
         const userPayload = this._buildIasUserPayload({ fullName, email, iasGroup });
-        const headers = this._getIasScimHeaders();
+        const headers = await this._getIasScimHeaders();
 
         const response = await fetch(`${baseUrl}/service/scim/Users`, {
             method: "POST",
@@ -494,24 +495,32 @@ class ManagerClientService extends cds.ApplicationService {
         };
     }
 
-    _getIasScimCredentials() {
-        const baseUrl = process.env.IAS_SCIM_BASE_URL;
-        const clientId = process.env.IAS_SCIM_CLIENT_ID;
-        const clientSecret = process.env.IAS_SCIM_CLIENT_SECRET;
+    async _getIasScimCredentials() {
+        const destination = await getDestination({
+            destinationName: "clientmanager-ias-scim"
+        });
 
-        if (!baseUrl || !clientId || !clientSecret) {
-            throw new Error("IAS SCIM credentials are not configured.");
+        if (!destination) {
+            throw new Error("Destination clientmanager-ias-scim was not found.");
+        }
+
+        if (!destination.url) {
+            throw new Error("Destination clientmanager-ias-scim does not have URL configured.");
+        }
+
+        if (!destination.username || !destination.password) {
+            throw new Error("Destination clientmanager-ias-scim does not have BasicAuthentication credentials configured.");
         }
 
         return {
-            baseUrl: baseUrl.replace(/\/$/, ""),
-            clientId,
-            clientSecret
+            baseUrl: destination.url.replace(/\/$/, ""),
+            clientId: destination.username,
+            clientSecret: destination.password
         };
     }
 
-    _getIasScimHeaders() {
-        const { clientId, clientSecret } = this._getIasScimCredentials();
+    async _getIasScimHeaders() {
+        const { clientId, clientSecret } = await this._getIasScimCredentials();
 
         const auth = Buffer
             .from(`${clientId}:${clientSecret}`)

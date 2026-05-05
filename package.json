@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@cap-js/postgres": "^2",
+    "@sap-cloud-sdk/connectivity": "^4.6.0",
     "@sap/cds": "^9",
     "@sap/xssec": "^4.13.0"
   },
