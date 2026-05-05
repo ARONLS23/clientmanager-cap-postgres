@@ -1,4 +1,5 @@
 const cds = require('@sap/cds');
+const https = require("https");
 
 class ManagerClientService extends cds.ApplicationService {
     init() {
@@ -434,9 +435,9 @@ class ManagerClientService extends cds.ApplicationService {
     }
 
     async _createUserInIas({ fullName, email, iasGroup }) {
-        const { baseUrl } = this._getIasScimCredentials();
+        const { baseUrl } = await this._getIasScimCredentials();
         const userPayload = this._buildIasUserPayload({ fullName, email, iasGroup });
-        const headers = this._getIasScimHeaders();
+        const headers = await this._getIasScimHeaders();
 
         const response = await fetch(`${baseUrl}/service/scim/Users`, {
             method: "POST",
@@ -494,14 +495,22 @@ class ManagerClientService extends cds.ApplicationService {
         };
     }
 
-    _getIasScimCredentials() {
+    async _getIasScimCredentials() {
         const baseUrl = process.env.IAS_SCIM_BASE_URL;
-        const clientId = process.env.IAS_SCIM_CLIENT_ID;
-        const clientSecret = process.env.IAS_SCIM_CLIENT_SECRET;
 
-        if (!baseUrl || !clientId || !clientSecret) {
-            throw new Error("IAS SCIM credentials are not configured.");
+        if (!baseUrl) {
+            throw new Error("IAS SCIM base URL is not configured.");
         }
+
+        const clientId = await this._getCredentialStorePassword(
+            "clientmanager-ias",
+            "IAS_SCIM_CLIENT_ID"
+        );
+
+        const clientSecret = await this._getCredentialStorePassword(
+            "clientmanager-ias",
+            "IAS_SCIM_CLIENT_SECRET"
+        );
 
         return {
             baseUrl: baseUrl.replace(/\/$/, ""),
@@ -510,8 +519,8 @@ class ManagerClientService extends cds.ApplicationService {
         };
     }
 
-    _getIasScimHeaders() {
-        const { clientId, clientSecret } = this._getIasScimCredentials();
+    async _getIasScimHeaders() {
+        const { clientId, clientSecret } = await this._getIasScimCredentials();
 
         const auth = Buffer
             .from(`${clientId}:${clientSecret}`)
@@ -522,6 +531,83 @@ class ManagerClientService extends cds.ApplicationService {
             "Accept": "application/scim+json",
             "Authorization": `Basic ${auth}`
         };
+    }
+
+    _getCredentialStoreCredentials() {
+        const vcapServices = JSON.parse(process.env.VCAP_SERVICES || "{}");
+        const credstoreServices = vcapServices.credstore || [];
+
+        const credentialStore = credstoreServices.find(
+            (serviceInstance) => serviceInstance.name === "clientmanager-credential-store"
+        );
+
+        if (!credentialStore) {
+            throw new Error("Credential Store service binding was not found.");
+        }
+
+        return credentialStore.credentials;
+    }
+
+    async _getCredentialStorePassword(namespace, name) {
+        const credentials = this._getCredentialStoreCredentials();
+
+        const url = new URL(`${credentials.url}/password`);
+        url.searchParams.set("name", name);
+
+        const responseText = await new Promise((resolve, reject) => {
+            const request = https.request(
+                url,
+                {
+                    method: "GET",
+                    cert: credentials.certificate,
+                    key: credentials.key,
+                    headers: {
+                        "sapcp-credstore-namespace": namespace,
+                        "Accept": "application/json"
+                    }
+                },
+                (response) => {
+                    let data = "";
+
+                    response.on("data", (chunk) => {
+                        data += chunk;
+                    });
+
+                    response.on("end", () => {
+                        if (response.statusCode < 200 || response.statusCode >= 300) {
+                            reject(
+                                new Error(
+                                    `Could not read credential ${name}: ${response.statusCode} ${data}`
+                                )
+                            );
+                            return;
+                        }
+
+                        resolve(data);
+                    });
+                }
+            );
+
+            request.on("error", reject);
+            request.end();
+        });
+
+        const isEncrypted = credentials.parameters?.encryption?.payload === "enabled";
+
+        if (!isEncrypted) {
+            return JSON.parse(responseText).value;
+        }
+
+        const privateKeyPem = `-----BEGIN PRIVATE KEY-----\n${credentials.encryption.client_private_key}\n-----END PRIVATE KEY-----`;
+
+        const { compactDecrypt, importPKCS8 } = await import("jose");
+
+        const privateKey = await importPKCS8(privateKeyPem, "RSA-OAEP-256");
+        const { plaintext } = await compactDecrypt(responseText, privateKey);
+
+        const decryptedPayload = JSON.parse(Buffer.from(plaintext).toString("utf8"));
+
+        return decryptedPayload.value;
     }
 }
 
