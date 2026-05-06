@@ -32,6 +32,7 @@ modules:
         parameters:
           config:
             enableBasicAuth: true
+      - name: clientmanager-redis-cache
 
   - name: clientmanager-postgres-deployer
     type: nodejs
@@ -103,3 +104,8 @@ resources:
     type: org.cloudfoundry.existing-service
     parameters:
       service-name: clientmanager-feature-flags
+
+  - name: clientmanager-redis-cache
+    type: org.cloudfoundry.existing-service
+    parameters:
+      service-name: clientmanager-redis-cache

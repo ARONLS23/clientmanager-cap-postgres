@@ -1,4 +1,31 @@
-ID,code,name,description
-ba2890ef-6a0c-470c-b53e-ac3b623e60e3,CLI001,Cliente 1,Cliente de prueba 1
-12fc8d2f-d2e1-4e1d-ac19-4606f2ea128b,CLI002,Cliente 2,Cliente de prueba 2
-0f6f4bc1-d6d4-4f95-9d99-84e0d8c74a5a,CLI003,Cliente 3,Cliente de prueba 3
+code,name,description,email,phone,industry,country,city,status
+CLI001,Acme Corporation,Cliente corporativo principal,contacto@acme.com,+51 999 111 222,Tecnología,Perú,Lima,ACTIVE
+CLI002,Global Foods,Cliente del sector alimentos,ventas@globalfoods.com,+51 999 222 333,Alimentos,Perú,Arequipa,ACTIVE
+CLI003,Andes Mining,Cliente minero,info@andesmining.com,+51 999 333 444,Minería,Perú,Cusco,PROSPECT
+CLI004,Pacific Retail,Cliente retail,contacto@pacificretail.com,+51 999 444 555,Retail,Perú,Lima,ACTIVE
+CLI005,North Logistics,Operador logístico,ops@northlogistics.com,+51 999 555 666,Logística,Perú,Trujillo,INACTIVE
+CLI006,Lima Tech Solutions,Proveedor de soluciones digitales,contacto@limatech.com,+51 999 666 777,Tecnología,Perú,Lima,ACTIVE
+CLI007,Inka Pharma,Cliente del sector farmacéutico,ventas@inkapharma.com,+51 999 777 888,Farmacéutica,Perú,Lima,ACTIVE
+CLI008,Blue Ocean Export,Empresa exportadora de productos marinos,info@blueoceanexport.com,+51 999 888 999,Exportación,Perú,Callao,PROSPECT
+CLI009,Green Energy SAC,Cliente de energías renovables,contacto@greenenergy.com,+51 999 101 202,Energía,Perú,Piura,ACTIVE
+CLI010,Andean Textiles,Empresa textil regional,ventas@andeantextiles.com,+51 999 202 303,Textil,Perú,Arequipa,ACTIVE
+CLI011,Capital Finance Group,Cliente financiero corporativo,contacto@capitalfinance.com,+51 999 303 404,Finanzas,Perú,Lima,ACTIVE
+CLI012,Amazonia Foods,Productor de alimentos amazónicos,info@amazoniafoods.com,+51 999 404 505,Alimentos,Perú,Iquitos,PROSPECT
+CLI013,Urban Build,Constructora urbana,proyectos@urbanbuild.com,+51 999 505 606,Construcción,Perú,Lima,ACTIVE
+CLI014,South Agro Export,Agroexportadora del sur,ventas@southagro.com,+51 999 606 707,Agricultura,Perú,Ica,ACTIVE
+CLI015,Metro Health,Red privada de salud,contacto@metrohealth.com,+51 999 707 808,Salud,Perú,Lima,INACTIVE
+CLI016,Digital Market Hub,Agencia de marketing digital,hello@digitalmarkethub.com,+51 999 808 909,Marketing,Perú,Lima,ACTIVE
+CLI017,Secure Data Systems,Empresa de ciberseguridad,info@securedatasystems.com,+51 999 909 010,Ciberseguridad,Perú,Lima,ACTIVE
+CLI018,Altiplano Logistics,Operador logístico regional,ops@altiplanologistics.com,+51 999 010 111,Logística,Perú,Puno,PROSPECT
+CLI019,Costa Retail Group,Cadena comercial costera,contacto@costaretail.com,+51 999 121 212,Retail,Perú,Chiclayo,ACTIVE
+CLI020,Nova Education,Institución educativa privada,admision@novaeducation.com,+51 999 232 323,Educación,Perú,Lima,ACTIVE
+CLI021,Orion Mining Services,Servicios para minería,contacto@orionmining.com,+51 999 343 434,Minería,Perú,Cajamarca,ACTIVE
+CLI022,Fast Courier Perú,Servicio de mensajería nacional,soporte@fastcourier.pe,+51 999 454 545,Logística,Perú,Lima,INACTIVE
+CLI023,Sunrise Hotels,Cadena hotelera regional,reservas@sunrisehotels.com,+51 999 565 656,Hotelería,Perú,Cusco,ACTIVE
+CLI024,Pacific Insurance,Empresa aseguradora,clientes@pacificinsurance.com,+51 999 676 767,Seguros,Perú,Lima,PROSPECT
+CLI025,Smart Factory SAC,Automatización industrial,ventas@smartfactory.com,+51 999 787 878,Manufactura,Perú,Lima,ACTIVE
+CLI026,Valley AgroTech,Tecnología para agricultura,info@valleyagrotech.com,+51 999 898 989,Agrotech,Perú,La Libertad,ACTIVE
+CLI027,Core Banking Solutions,Soluciones para banca,contacto@corebanking.com,+51 999 989 090,Finanzas,Perú,Lima,ACTIVE
+CLI028,Aqua Pure,Tratamiento de agua industrial,ventas@aquapure.com,+51 999 090 191,Servicios Industriales,Perú,Piura,PROSPECT
+CLI029,Mountain Travel,Agencia de turismo receptivo,info@mountaintravel.com,+51 999 191 292,Turismo,Perú,Cusco,ACTIVE
+CLI030,DataCloud Perú,Servicios cloud y analítica,contacto@datacloudperu.com,+51 999 292 393,Tecnología,Perú,Lima,ACTIVE

@@ -6,9 +6,20 @@ using {
 } from '@sap/cds/common';
 
 entity Client : cuid, managed {
-    code       : String(20);
-    name       : String(100);
+    code        : String(20);
+    name        : String(100);
     description : String(255);
+
+    email       : String(120);
+    phone       : String(30);
+    industry    : String(80);
+    country     : String(80);
+    city        : String(80);
+    status      : String enum {
+        ACTIVE;
+        INACTIVE;
+        PROSPECT;
+    }
 }
 
 entity Project : cuid, managed {

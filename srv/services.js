@@ -1,4 +1,6 @@
 const cds = require('@sap/cds');
+const Redis = require("ioredis");
+const crypto = require("crypto");
 
 class ManagerClientService extends cds.ApplicationService {
     init() {
@@ -10,6 +12,8 @@ class ManagerClientService extends cds.ApplicationService {
         this.on('sendTestAlert', this._sendTestAlert);
         this.on("runScheduledHealthCheck", this._runScheduledHealthCheck);
         this.on("createUser", this._createUser);
+        this.on("READ", "Clients", (req, next) => this._readClientsWithCache(req, next));
+        this.after(["CREATE", "UPDATE", "DELETE"], "Clients", () => this._clearClientsCache());
 
         return super.init();
     }
@@ -593,6 +597,131 @@ class ManagerClientService extends cds.ApplicationService {
         } catch (error) {
             console.warn(`[Feature Flags] Error evaluating ${featureName}:`, error);
             return defaultValue;
+        }
+    }
+
+    _getRedisCredentials() {
+        const vcapServices = JSON.parse(process.env.VCAP_SERVICES || "{}");
+        const redisServices = vcapServices["redis-cache"] || [];
+
+        const redisService = redisServices.find(
+            (serviceInstance) => serviceInstance.name === "clientmanager-redis-cache"
+        );
+
+        if (!redisService) {
+            throw new Error("Redis service binding was not found.");
+        }
+
+        return redisService.credentials;
+    }
+
+    _getRedisClient() {
+        if (this._redisClient) {
+            return this._redisClient;
+        }
+
+        const credentials = this._getRedisCredentials();
+
+        const redisUrl =
+            credentials.uri ||
+            credentials.url ||
+            credentials.connectionString ||
+            credentials.redisUri;
+
+        if (redisUrl) {
+            this._redisClient = new Redis(redisUrl, {
+                tls: redisUrl.startsWith("rediss://") ? {} : undefined,
+                lazyConnect: true,
+                maxRetriesPerRequest: 2
+            });
+
+            return this._redisClient;
+        }
+
+        const host = credentials.hostname || credentials.host;
+        const port = Number(credentials.port || 6379);
+        const password = credentials.password;
+
+        if (!host) {
+            throw new Error("Redis host was not found in service credentials.");
+        }
+
+        this._redisClient = new Redis({
+            host,
+            port,
+            password,
+            tls: credentials.tls || credentials.ssl ? {} : undefined,
+            lazyConnect: true,
+            maxRetriesPerRequest: 2
+        });
+
+        return this._redisClient;
+    }
+
+    _buildClientsCacheKey(req) {
+        const queryHash = crypto
+            .createHash("sha256")
+            .update(JSON.stringify(req.query))
+            .digest("hex");
+
+        return `clientmanager:clients:${queryHash}`;
+    }
+
+    async _readClientsWithCache(req, next) {
+        const redis = this._getRedisClient();
+        const cacheKey = this._buildClientsCacheKey(req);
+        const cacheTtlSeconds = 60;
+
+        try {
+            if (redis.status === "wait") {
+                await redis.connect();
+            }
+
+            const cachedValue = await redis.get(cacheKey);
+
+            if (cachedValue) {
+                console.log("[Redis] Clients cache hit:", cacheKey);
+                return JSON.parse(cachedValue);
+            }
+
+            console.log("[Redis] Clients cache miss:", cacheKey);
+
+            const result = await next();
+
+            await redis.set(
+                cacheKey,
+                JSON.stringify(result),
+                "EX",
+                cacheTtlSeconds
+            );
+
+            return result;
+        } catch (error) {
+            console.warn("[Redis] Clients cache error. Falling back to database:", error.message);
+            return next();
+        }
+    }
+
+    async _clearClientsCache() {
+        try {
+            const redis = this._getRedisClient();
+
+            if (redis.status === "wait") {
+                await redis.connect();
+            }
+
+            const keys = await redis.keys("clientmanager:clients:*");
+
+            if (!keys.length) {
+                console.log("[Redis] No Clients cache keys to clear.");
+                return;
+            }
+
+            await redis.del(keys);
+
+            console.log(`[Redis] Cleared Clients cache keys: ${keys.length}`);
+        } catch (error) {
+            console.warn("[Redis] Could not clear Clients cache:", error.message);
         }
     }
 }
